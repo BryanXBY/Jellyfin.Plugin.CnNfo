@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -36,19 +38,7 @@ jobs:
           echo "zip=$OUT" >> "$GITHUB_OUTPUT"
           echo "md5=$MD5" >> "$GITHUB_OUTPUT"
 
-      - name: Update manifest.json
-        run: |
-          python3 .github/scripts/update-manifest.py \
-            --version "${{ steps.ver.outputs.version }}" \
-            --checksum "${{ steps.pkg.outputs.md5 }}" \
-            --url "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/${{ steps.pkg.outputs.zip }}"
-          git config user.name github-actions
-          git config user.email actions@github.com
-          git checkout main
-          git add manifest.json
-          git commit -m "release: ${{ github.ref_name }}" || echo "nothing to commit"
-          git push
-
+      # 先把 GitHub Release 建好，即使 manifest 步骤失败也至少有可下载的 zip
       - name: GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -56,4 +46,21 @@ jobs:
           body: |
             ## CnNfo ${{ steps.ver.outputs.version }}
             - md5: `${{ steps.pkg.outputs.md5 }}`
-            - 仓库 manifest 已自动更新；Jellyfin 客户端会在下次刷新仓库时看到这一版。
+            - Jellyfin 仓库 manifest 已自动更新（见 main 分支 manifest.json）。
+
+      - name: Update manifest.json on main
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout main
+          git pull --rebase origin main
+          python3 .github/scripts/update-manifest.py \
+            --version "${{ steps.ver.outputs.version }}" \
+            --checksum "${{ steps.pkg.outputs.md5 }}" \
+            --url "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/${{ steps.pkg.outputs.zip }}"
+          git add manifest.json
+          git diff --cached --quiet && echo "manifest unchanged, skipping commit" && exit 0 || true
+          git commit -m "release: ${{ github.ref_name }}"
+          git push origin main
