@@ -32,10 +32,12 @@ jobs:
         run: |
           set -e
           OUT="cnnfo-${{ steps.ver.outputs.version }}.zip"
+          ROOT="$(pwd)"
           STAGE=$(mktemp -d)
+          rm -f "$ROOT/$OUT"
           cd src/Jellyfin.Plugin.CnNfo/bin/Release/net8.0/
-          # 把第三方依赖 dll 全部一起打包（AngleSharp / AnitomySharp / TMDbLib 等）
-          # 排除：Jellyfin 服务器自身已加载的（MediaBrowser.*, Jellyfin.* 框架，Microsoft.Extensions.*, System.*）
+          # 把第三方依赖 dll 一起打包（AngleSharp / AnitomySharp / TMDbLib + 传递依赖）
+          # 排除 Jellyfin / Emby / Microsoft.Extensions / System 这些服务器已加载的
           shopt -s nullglob
           for f in *.dll *.xml; do
             case "$f" in
@@ -45,9 +47,11 @@ jobs:
             cp "$f" "$STAGE/"
           done
           cd "$STAGE"
+          echo "Bundling:"
           ls -la
-          zip "$OLDPWD/$OUT" *.dll *.xml 2>/dev/null || zip "$OLDPWD/$OUT" *.dll
-          cd "$OLDPWD"
+          zip "$ROOT/$OUT" *.dll *.xml 2>/dev/null || zip "$ROOT/$OUT" *.dll
+          cd "$ROOT"
+          ls -la "$OUT"
           MD5=$(md5sum "$OUT" | awk '{print $1}')
           SIZE=$(stat -c %s "$OUT")
           echo "Final zip: $OUT, size=$SIZE bytes, md5=$MD5"
