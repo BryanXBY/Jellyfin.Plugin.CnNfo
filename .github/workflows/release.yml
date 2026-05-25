@@ -32,9 +32,25 @@ jobs:
         run: |
           set -e
           OUT="cnnfo-${{ steps.ver.outputs.version }}.zip"
-          cp src/Jellyfin.Plugin.CnNfo/bin/Release/net8.0/Jellyfin.Plugin.CnNfo.dll .
-          zip "$OUT" Jellyfin.Plugin.CnNfo.dll
+          STAGE=$(mktemp -d)
+          cd src/Jellyfin.Plugin.CnNfo/bin/Release/net8.0/
+          # 把第三方依赖 dll 全部一起打包（AngleSharp / AnitomySharp / TMDbLib 等）
+          # 排除：Jellyfin 服务器自身已加载的（MediaBrowser.*, Jellyfin.* 框架，Microsoft.Extensions.*, System.*）
+          shopt -s nullglob
+          for f in *.dll *.xml; do
+            case "$f" in
+              MediaBrowser.*|Jellyfin.Controller*|Jellyfin.Model*|Jellyfin.Data*|Jellyfin.Naming*|Jellyfin.Extensions*|Jellyfin.Server*|Jellyfin.Common*|Emby.*|Microsoft.Extensions.*|Microsoft.AspNetCore.*|System.*|netstandard*|mscorlib*)
+                continue ;;
+            esac
+            cp "$f" "$STAGE/"
+          done
+          cd "$STAGE"
+          ls -la
+          zip "$OLDPWD/$OUT" *.dll *.xml 2>/dev/null || zip "$OLDPWD/$OUT" *.dll
+          cd "$OLDPWD"
           MD5=$(md5sum "$OUT" | awk '{print $1}')
+          SIZE=$(stat -c %s "$OUT")
+          echo "Final zip: $OUT, size=$SIZE bytes, md5=$MD5"
           echo "zip=$OUT" >> "$GITHUB_OUTPUT"
           echo "md5=$MD5" >> "$GITHUB_OUTPUT"
 
