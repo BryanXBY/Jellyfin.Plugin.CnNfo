@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/BryanXBY/Jellyfin.Plugin.CnNfo/main/assets/banner.png",
     "versions": [
       {
+        "version": "1.0.6.0",
+        "changelog": "release 1.0.6",
+        "targetAbi": "10.10.0.0",
+        "sourceUrl": "https://github.com/BryanXBY/Jellyfin.Plugin.CnNfo/releases/download/v1.0.6/cnnfo-1.0.6.zip",
+        "checksum": "f73231039dc104efceb82acf4f96050a",
+        "timestamp": "2026-05-25T14:52:57Z"
+      },
+      {
         "version": "1.0.5.0",
         "changelog": "release 1.0.5 - 剧情简介取 .all 全文版（不再被'展开全部'截断）；清空白和全角缩进；manifest 加版本去重",
         "targetAbi": "10.10.0.0",
