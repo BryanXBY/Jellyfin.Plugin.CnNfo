@@ -32,5 +32,5 @@ public class SeasonProvider : IRemoteMetadataProvider<Season, SeasonInfo>
         => Task.FromResult(Enumerable.Empty<RemoteSearchResult>());
 
     public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
-        => _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
+        => ProviderHelpers.FetchDoubanImageAsync(_httpClientFactory, url, cancellationToken);
 }

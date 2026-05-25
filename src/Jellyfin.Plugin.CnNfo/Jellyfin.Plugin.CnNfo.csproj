@@ -12,8 +12,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>Jellyfin.Plugin.CnNfo</RootNamespace>
     <AssemblyName>Jellyfin.Plugin.CnNfo</AssemblyName>
-    <AssemblyVersion>1.0.3.0</AssemblyVersion>
-    <FileVersion>1.0.3.0</FileVersion>
+    <AssemblyVersion>1.0.4.0</AssemblyVersion>
+    <FileVersion>1.0.4.0</FileVersion>
     <!-- 让 NuGet 依赖 dll (AngleSharp / AnitomySharp / TMDbLib 等) 复制到 bin 输出，
          否则插件 zip 里只有主 dll，Jellyfin 加载时找不到依赖直接 NotSupported -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>

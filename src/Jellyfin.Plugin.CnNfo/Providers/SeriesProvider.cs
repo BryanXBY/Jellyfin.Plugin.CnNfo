@@ -72,5 +72,5 @@ public class SeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>
     }
 
     public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
-        => _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
+        => ProviderHelpers.FetchDoubanImageAsync(_httpClientFactory, url, cancellationToken);
 }

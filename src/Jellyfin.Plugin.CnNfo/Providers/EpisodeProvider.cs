@@ -33,5 +33,5 @@ public class EpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>
         => Task.FromResult(Enumerable.Empty<RemoteSearchResult>());
 
     public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
-        => _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
+        => ProviderHelpers.FetchDoubanImageAsync(_httpClientFactory, url, cancellationToken);
 }

@@ -90,8 +90,5 @@ public class MovieProvider : IRemoteMetadataProvider<Movie, MovieInfo>
     }
 
     public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
-    {
-        var client = _httpClientFactory.CreateClient(NamedClient.Default);
-        return client.GetAsync(url, cancellationToken);
-    }
+        => ProviderHelpers.FetchDoubanImageAsync(_httpClientFactory, url, cancellationToken);
 }

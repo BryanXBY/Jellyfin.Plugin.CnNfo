@@ -1,8 +1,14 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Plugin.CnNfo.ExternalIds;
 using Jellyfin.Plugin.CnNfo.Models;
+using Jellyfin.Plugin.CnNfo.Util;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -13,6 +19,33 @@ namespace Jellyfin.Plugin.CnNfo.Providers;
 internal static class ProviderHelpers
 {
     public const string ProviderName = "CnNfo";
+
+    /// <summary>
+    /// 服务端拉豆瓣图：自带 Referer / UA，规避防盗链 403。
+    /// 走 IRemoteMetadataProvider/IRemoteImageProvider.GetImageResponse 的路径上用。
+    /// </summary>
+    public static Task<HttpResponseMessage> FetchDoubanImageAsync(
+        IHttpClientFactory factory, string url, CancellationToken ct)
+    {
+        var client = factory.CreateClient(NamedClient.Default);
+        var req = new HttpRequestMessage(HttpMethod.Get, url);
+        req.Headers.UserAgent.ParseAdd(HttpUtil.DesktopUserAgent);
+        req.Headers.Referrer = new Uri("https://movie.douban.com/");
+        return client.SendAsync(req, ct);
+    }
+
+    /// <summary>
+    /// 把豆瓣图床原始 URL 包装成走本插件反向代理的 URL，
+    /// 用于 Web 客户端 &lt;img&gt; 直接渲染的场景（搜索预览缩略图）。
+    /// </summary>
+    public static string WrapImageProxy(string? originalUrl)
+    {
+        if (string.IsNullOrEmpty(originalUrl))
+        {
+            return string.Empty;
+        }
+        return "/Plugins/CnNfo/Image?url=" + Uri.EscapeDataString(originalUrl);
+    }
 
     /// <summary>把 DoubanSubject 拷贝到目标 BaseItem。</summary>
     public static void ApplyTo(BaseItem item, DoubanSubject subj, bool preferOriginalTitle)
@@ -98,7 +131,8 @@ internal static class ProviderHelpers
         var r = new RemoteSearchResult
         {
             Name = e.Title,
-            ImageUrl = e.PosterUrl,
+            // 浏览器直接拉豆瓣会 403，通过本插件代理
+            ImageUrl = string.IsNullOrEmpty(e.PosterUrl) ? null : WrapImageProxy(e.PosterUrl),
             ProductionYear = e.Year
         };
         r.SetProviderId(DoubanMovieExternalId.Provider, e.Id);
