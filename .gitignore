@@ -1,0 +1,22 @@
+## .NET ##
+bin/
+obj/
+build/
+out/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+## Jellyfin plugin build artifacts ##
+*.zip
+*.tar.gz
+artifacts/

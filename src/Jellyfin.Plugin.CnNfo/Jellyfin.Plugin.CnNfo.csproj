@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>Jellyfin.Plugin.CnNfo</RootNamespace>
+    <AssemblyName>Jellyfin.Plugin.CnNfo</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Authors>BryanXBY</Authors>
+    <Company>BryanXBY</Company>
+    <Copyright>Copyright (c) 2026 BryanXBY</Copyright>
+    <RepositoryUrl>https://github.com/BryanXBY/Jellyfin.Plugin.CnNfo</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/BryanXBY/Jellyfin.Plugin.CnNfo</PackageProjectUrl>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>CS1591;CS8618;CS8625;CA1303;CA1305;CA1304;CA1310;CA2007;NU1701</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Jellyfin 10.11.x SDK (.NET 9) -->
+    <PackageReference Include="Jellyfin.Controller" Version="10.11.0" />
+    <PackageReference Include="Jellyfin.Model" Version="10.11.0" />
+
+    <!-- HTML scraping -->
+    <PackageReference Include="AngleSharp" Version="1.1.2" />
+
+    <!-- TMDB fallback -->
+    <PackageReference Include="TMDbLib" Version="2.2.0" />
+
+    <!-- Anime filename parsing -->
+    <PackageReference Include="AnitomySharp" Version="0.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Configuration\configPage.html" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,59 @@
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Derive version
+        id: ver
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: dotnet build Jellyfin.Plugin.CnNfo.sln -c Release
+
+      - name: Package
+        id: pkg
+        run: |
+          set -e
+          OUT="cnnfo-${{ steps.ver.outputs.version }}.zip"
+          cp src/Jellyfin.Plugin.CnNfo/bin/Release/net9.0/Jellyfin.Plugin.CnNfo.dll .
+          zip "$OUT" Jellyfin.Plugin.CnNfo.dll
+          MD5=$(md5sum "$OUT" | awk '{print $1}')
+          echo "zip=$OUT" >> "$GITHUB_OUTPUT"
+          echo "md5=$MD5" >> "$GITHUB_OUTPUT"
+
+      - name: Update manifest.json
+        run: |
+          python3 .github/scripts/update-manifest.py \
+            --version "${{ steps.ver.outputs.version }}" \
+            --checksum "${{ steps.pkg.outputs.md5 }}" \
+            --url "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/${{ steps.pkg.outputs.zip }}"
+          git config user.name github-actions
+          git config user.email actions@github.com
+          git checkout main
+          git add manifest.json
+          git commit -m "release: ${{ github.ref_name }}" || echo "nothing to commit"
+          git push
+
+      - name: GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.pkg.outputs.zip }}
+          body: |
+            ## CnNfo ${{ steps.ver.outputs.version }}
+            - md5: `${{ steps.pkg.outputs.md5 }}`
+            - 仓库 manifest 已自动更新；Jellyfin 客户端会在下次刷新仓库时看到这一版。

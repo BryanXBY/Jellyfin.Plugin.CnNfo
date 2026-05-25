@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <title>CnNfo</title>
+</head>
+<body>
+<div id="CnNfoConfigPage"
+     data-role="page"
+     class="page type-interior pluginConfigurationPage"
+     data-require="emby-input,emby-button,emby-select,emby-checkbox">
+    <div data-role="content">
+        <div class="content-primary">
+            <form class="cnNfoConfigForm">
+                <h2>豆瓣</h2>
+
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="DoubanCookie">豆瓣 Cookie</label>
+                    <input is="emby-input" type="text" id="DoubanCookie" name="DoubanCookie" />
+                    <div class="fieldDescription">
+                        在浏览器登录豆瓣后，F12 → Network 复制 Cookie 串（含 bid 和 dbcl2）。留空则匿名访问，更易被风控。
+                    </div>
+                </div>
+
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="RequestIntervalMs">最小请求间隔（ms）</label>
+                    <input is="emby-input" type="number" id="RequestIntervalMs" name="RequestIntervalMs" min="500" />
+                    <div class="fieldDescription">两次豆瓣请求最小间隔，默认 1500ms，建议不低于 1000。</div>
+                </div>
+
+                <h2>兜底数据源</h2>
+
+                <label class="checkboxContainer">
+                    <input is="emby-checkbox" type="checkbox" id="EnableImdbFallback" name="EnableImdbFallback" />
+                    <span>豆瓣命中失败时回退 IMDB / OMDb</span>
+                </label>
+
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="OmdbApiKey">OMDb API Key</label>
+                    <input is="emby-input" type="text" id="OmdbApiKey" name="OmdbApiKey" />
+                    <div class="fieldDescription">在 <a href="http://www.omdbapi.com/apikey.aspx" target="_blank">omdbapi.com</a> 免费申请，留空则跳过 IMDB 兜底。</div>
+                </div>
+
+                <label class="checkboxContainer">
+                    <input is="emby-checkbox" type="checkbox" id="EnableTmdbFallback" name="EnableTmdbFallback" />
+                    <span>IMDB 也失败时回退 TMDB</span>
+                </label>
+
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="TmdbApiKey">TMDB API Key</label>
+                    <input is="emby-input" type="text" id="TmdbApiKey" name="TmdbApiKey" />
+                    <div class="fieldDescription">在 <a href="https://www.themoviedb.org/settings/api" target="_blank">themoviedb.org</a> 申请。</div>
+                </div>
+
+                <h2>本地化</h2>
+
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="PreferredLanguage">优先语言</label>
+                    <input is="emby-input" type="text" id="PreferredLanguage" name="PreferredLanguage" />
+                </div>
+
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="PreferredCountry">优先地区</label>
+                    <input is="emby-input" type="text" id="PreferredCountry" name="PreferredCountry" />
+                </div>
+
+                <label class="checkboxContainer">
+                    <input is="emby-checkbox" type="checkbox" id="PreferOriginalTitle" name="PreferOriginalTitle" />
+                    <span>使用原名作为主标题（默认关闭，使用中文译名）</span>
+                </label>
+
+                <h2>性能与调试</h2>
+
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="CacheMinutes">缓存时长（分钟）</label>
+                    <input is="emby-input" type="number" id="CacheMinutes" name="CacheMinutes" min="0" />
+                </div>
+
+                <label class="checkboxContainer">
+                    <input is="emby-checkbox" type="checkbox" id="DebugLog" name="DebugLog" />
+                    <span>开启调试日志</span>
+                </label>
+
+                <br />
+                <div>
+                    <button is="emby-button" type="submit" class="raised button-submit block">
+                        <span>保存</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        (function () {
+            var CnNfoPluginId = 'b9a0f5d2-3e1c-4d5e-8f6a-1b2c3d4e5f60';
+            var page = document.querySelector('#CnNfoConfigPage');
+            var form = page.querySelector('.cnNfoConfigForm');
+
+            function load() {
+                Dashboard.showLoadingMsg();
+                ApiClient.getPluginConfiguration(CnNfoPluginId).then(function (cfg) {
+                    page.querySelector('#DoubanCookie').value = cfg.DoubanCookie || '';
+                    page.querySelector('#TmdbApiKey').value = cfg.TmdbApiKey || '';
+                    page.querySelector('#OmdbApiKey').value = cfg.OmdbApiKey || '';
+                    page.querySelector('#EnableImdbFallback').checked = cfg.EnableImdbFallback !== false;
+                    page.querySelector('#EnableTmdbFallback').checked = cfg.EnableTmdbFallback !== false;
+                    page.querySelector('#CacheMinutes').value = cfg.CacheMinutes || 60;
+                    page.querySelector('#RequestIntervalMs').value = cfg.RequestIntervalMs || 1500;
+                    page.querySelector('#PreferOriginalTitle').checked = !!cfg.PreferOriginalTitle;
+                    page.querySelector('#PreferredLanguage').value = cfg.PreferredLanguage || 'zh-CN';
+                    page.querySelector('#PreferredCountry').value = cfg.PreferredCountry || 'CN';
+                    page.querySelector('#DebugLog').checked = !!cfg.DebugLog;
+                    Dashboard.hideLoadingMsg();
+                });
+            }
+
+            page.addEventListener('viewshow', load);
+
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                Dashboard.showLoadingMsg();
+                ApiClient.getPluginConfiguration(CnNfoPluginId).then(function (cfg) {
+                    cfg.DoubanCookie = page.querySelector('#DoubanCookie').value;
+                    cfg.TmdbApiKey = page.querySelector('#TmdbApiKey').value;
+                    cfg.OmdbApiKey = page.querySelector('#OmdbApiKey').value;
+                    cfg.EnableImdbFallback = page.querySelector('#EnableImdbFallback').checked;
+                    cfg.EnableTmdbFallback = page.querySelector('#EnableTmdbFallback').checked;
+                    cfg.CacheMinutes = parseInt(page.querySelector('#CacheMinutes').value, 10) || 60;
+                    cfg.RequestIntervalMs = parseInt(page.querySelector('#RequestIntervalMs').value, 10) || 1500;
+                    cfg.PreferOriginalTitle = page.querySelector('#PreferOriginalTitle').checked;
+                    cfg.PreferredLanguage = page.querySelector('#PreferredLanguage').value || 'zh-CN';
+                    cfg.PreferredCountry = page.querySelector('#PreferredCountry').value || 'CN';
+                    cfg.DebugLog = page.querySelector('#DebugLog').checked;
+                    ApiClient.updatePluginConfiguration(CnNfoPluginId, cfg).then(function (r) {
+                        Dashboard.processPluginConfigurationUpdateResult(r);
+                    });
+                });
+                return false;
+            });
+        })();
+    </script>
+</div>
+</body>
+</html>

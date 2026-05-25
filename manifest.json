@@ -1,0 +1,12 @@
+[
+  {
+    "guid": "b9a0f5d2-3e1c-4d5e-8f6a-1b2c3d4e5f60",
+    "name": "CnNfo",
+    "description": "默认从豆瓣抓取元数据，回退 IMDB、TMDB；面向中文用户。",
+    "overview": "默认豆瓣，回退 IMDB / TMDB 的中文元数据插件",
+    "owner": "BryanXBY",
+    "category": "Metadata",
+    "imageUrl": "https://raw.githubusercontent.com/BryanXBY/Jellyfin.Plugin.CnNfo/main/assets/banner.png",
+    "versions": []
+  }
+]
