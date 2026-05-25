@@ -4,8 +4,8 @@
     <TargetFramework>net9.0</TargetFramework>
     <RootNamespace>Jellyfin.Plugin.CnNfo</RootNamespace>
     <AssemblyName>Jellyfin.Plugin.CnNfo</AssemblyName>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <FileVersion>1.0.1.0</FileVersion>
     <Authors>BryanXBY</Authors>
     <Company>BryanXBY</Company>
     <Copyright>Copyright (c) 2026 BryanXBY</Copyright>

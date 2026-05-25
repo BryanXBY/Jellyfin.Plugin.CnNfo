@@ -13,5 +13,7 @@ public class DoubanSeriesExternalId : IExternalId
 
     public ExternalIdMediaType? Type => ExternalIdMediaType.Series;
 
+    public string? UrlFormatString => "https://movie.douban.com/subject/{0}/";
+
     public bool Supports(IHasProviderIds item) => item is Series;
 }
