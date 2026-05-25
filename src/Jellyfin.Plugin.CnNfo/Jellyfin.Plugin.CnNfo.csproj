@@ -1,11 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <!--
+      重要：使用 10.10.x 系列 SDK 编译。
+      原因：NuGet Jellyfin.Controller 10.11.0 的 IExternalId 已经移除了 UrlFormatString，
+      但铁威马 TOS 那种自编译的 "10.11.0 (c8eed9a89-dirty)" 实际上是从 10.11.0-rc 早期
+      分支编译的，IExternalId.UrlFormatString 还是抽象成员。
+      用 10.10.7 编译能让我们的 ExternalId 类把 UrlFormatString 正确标记为接口实现，
+      同时官方 10.11.0 server 也能加载（targetAbi 10.10.x ≤ server）。
+    -->
+    <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>Jellyfin.Plugin.CnNfo</RootNamespace>
     <AssemblyName>Jellyfin.Plugin.CnNfo</AssemblyName>
-    <AssemblyVersion>1.0.1.0</AssemblyVersion>
-    <FileVersion>1.0.1.0</FileVersion>
+    <AssemblyVersion>1.0.2.0</AssemblyVersion>
+    <FileVersion>1.0.2.0</FileVersion>
     <Authors>BryanXBY</Authors>
     <Company>BryanXBY</Company>
     <Copyright>Copyright (c) 2026 BryanXBY</Copyright>
@@ -21,9 +29,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Jellyfin 10.11.x SDK (.NET 9) -->
-    <PackageReference Include="Jellyfin.Controller" Version="10.11.0" />
-    <PackageReference Include="Jellyfin.Model" Version="10.11.0" />
+    <!-- Jellyfin 10.10.x SDK (.NET 8) — 与铁威马 TOS 自编译 10.11.0 早期分支 ABI 一致 -->
+    <PackageReference Include="Jellyfin.Controller" Version="10.10.7" />
+    <PackageReference Include="Jellyfin.Model" Version="10.10.7" />
 
     <!-- HTML scraping -->
     <PackageReference Include="AngleSharp" Version="1.1.2" />

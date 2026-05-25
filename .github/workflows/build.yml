@@ -15,7 +15,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '8.0.x'
 
       - name: Restore
         run: dotnet restore Jellyfin.Plugin.CnNfo.sln
@@ -27,4 +27,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Jellyfin.Plugin.CnNfo
-          path: src/Jellyfin.Plugin.CnNfo/bin/Release/net9.0/Jellyfin.Plugin.CnNfo.dll
+          path: src/Jellyfin.Plugin.CnNfo/bin/Release/net8.0/Jellyfin.Plugin.CnNfo.dll

@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 MANIFEST = Path(__file__).resolve().parents[2] / "manifest.json"
-TARGET_ABI = "10.11.0.0"
+TARGET_ABI = "10.10.0.0"
 
 
 def main() -> int:
