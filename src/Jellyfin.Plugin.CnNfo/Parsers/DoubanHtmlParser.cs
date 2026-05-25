@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -72,7 +73,7 @@ internal static class DoubanHtmlParser
             .Where(c => c.Name.Length > 0)
             .ToArray();
 
-        subject.Overview = doc.QuerySelector("span[property='v:summary']")?.TextContent?.Trim();
+        subject.Overview = CleanOverview(ExtractOverview(doc));
 
         var poster = (doc.QuerySelector("#mainpic img") as IHtmlImageElement)?.Source;
         subject.PosterUrl = SanitizePosterUrl(poster);
@@ -134,6 +135,79 @@ internal static class DoubanHtmlParser
             : MediaCategory.Movie;
 
         return subject;
+    }
+
+    /// <summary>
+    /// 豆瓣详情页的剧情简介通常有两个 span：
+    ///   - .all (hidden) -> 完整长版本
+    ///   - .short        -> 截断版 + "(展开全部)" 链接
+    /// 两个都可能带 property="v:summary"，所以单纯 QuerySelector 容易取到 .short。
+    /// 这里显式优先取 .all，再回退到 [property=v:summary]，最后挑最长那段。
+    /// </summary>
+    private static string? ExtractOverview(AngleSharp.Dom.IDocument doc)
+    {
+        var candidates = new List<string?>
+        {
+            doc.QuerySelector("#link-report-intra span.all")?.TextContent,
+            doc.QuerySelector("#link-report span.all")?.TextContent,
+            doc.QuerySelector("span.all[property='v:summary']")?.TextContent,
+            doc.QuerySelector("span[property='v:summary']:not(.short)")?.TextContent,
+            doc.QuerySelector("span[property='v:summary']")?.TextContent,
+            doc.QuerySelector("#link-report .short")?.TextContent
+        };
+        return candidates
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .OrderByDescending(s => s!.Length)
+            .FirstOrDefault();
+    }
+
+    /// <summary>
+    /// 豆瓣简介里常有：
+    ///   - 段落前缀的全角空格 "　　"
+    ///   - 行首大段半角空格（HTML 缩进残留）
+    ///   - 多个连续空行
+    ///   - 末尾 "(展开全部)" / "(收起)" 控制文本
+    /// 这里把这些都清掉，保留段落换行。
+    /// </summary>
+    private static string CleanOverview(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return string.Empty;
+        }
+
+        // 去掉 "(展开全部)" / "(收起)" / "©豆瓣" 之类的 UI 标记
+        var cleaned = Regex.Replace(raw, @"\(\s*展开全部\s*\)|\(\s*收起\s*\)|©\s*豆瓣", string.Empty);
+
+        var lines = cleaned.Replace("\r\n", "\n").Replace("\r", "\n").Split('\n');
+        var paragraphs = new List<string>();
+        var cur = new StringBuilder();
+
+        foreach (var rawLine in lines)
+        {
+            // 去前后半角空格、全角空格、制表符
+            var line = rawLine.Trim().Trim('\t', ' ', '　');
+            if (line.Length == 0)
+            {
+                if (cur.Length > 0)
+                {
+                    paragraphs.Add(cur.ToString());
+                    cur.Clear();
+                }
+                continue;
+            }
+            if (cur.Length > 0)
+            {
+                cur.Append('\n');
+            }
+            cur.Append(line);
+        }
+        if (cur.Length > 0)
+        {
+            paragraphs.Add(cur.ToString());
+        }
+
+        return string.Join("\n\n", paragraphs);
     }
 
     private static string NormalizeDate(string s)

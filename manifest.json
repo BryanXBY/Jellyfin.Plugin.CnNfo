@@ -10,7 +10,7 @@
     "versions": [
       {
         "version": "1.0.5.0",
-        "changelog": "release 1.0.5",
+        "changelog": "release 1.0.5 - 剧情简介取 .all 全文版（不再被'展开全部'截断）；清空白和全角缩进；manifest 加版本去重",
         "targetAbi": "10.10.0.0",
         "sourceUrl": "https://github.com/BryanXBY/Jellyfin.Plugin.CnNfo/releases/download/v1.0.5/cnnfo-1.0.5.zip",
         "checksum": "ba8a4c4f38322e971833cd44a318f145",
@@ -18,7 +18,7 @@
       },
       {
         "version": "1.0.4.0",
-        "changelog": "release 1.0.4",
+        "changelog": "release 1.0.4 - 反代豆瓣图床绕过防盗链 (修复搜索预览和最终封面都拿不到图)",
         "targetAbi": "10.10.0.0",
         "sourceUrl": "https://github.com/BryanXBY/Jellyfin.Plugin.CnNfo/releases/download/v1.0.4/cnnfo-1.0.4.zip",
         "checksum": "dafee475da6764abc7db1c0fbd6a7879",
@@ -26,23 +26,15 @@
       },
       {
         "version": "1.0.3.0",
-        "changelog": "release 1.0.3",
+        "changelog": "release 1.0.3 - zip 打包加入 AngleSharp / AnitomySharp / TMDbLib 等第三方依赖 dll",
         "targetAbi": "10.10.0.0",
         "sourceUrl": "https://github.com/BryanXBY/Jellyfin.Plugin.CnNfo/releases/download/v1.0.3/cnnfo-1.0.3.zip",
         "checksum": "3b66c62c8f04de1fabbb2f00a9ffcbf6",
         "timestamp": "2026-05-25T14:12:40Z"
       },
       {
-        "version": "1.0.3.0",
-        "changelog": "release 1.0.3",
-        "targetAbi": "10.10.0.0",
-        "sourceUrl": "https://github.com/BryanXBY/Jellyfin.Plugin.CnNfo/releases/download/v1.0.3/cnnfo-1.0.3.zip",
-        "checksum": "f94b3807d0c5a40fc9d336da059d0cb8",
-        "timestamp": "2026-05-25T14:09:28Z"
-      },
-      {
         "version": "1.0.2.0",
-        "changelog": "release 1.0.2 - 修复 TerraMaster TOS 自编译 Jellyfin 上的 UrlFormatString TypeLoadException",
+        "changelog": "release 1.0.2 - 切到 Jellyfin 10.10.7 SDK，让 IExternalId.UrlFormatString 正确实现接口",
         "targetAbi": "10.10.0.0",
         "sourceUrl": "https://github.com/BryanXBY/Jellyfin.Plugin.CnNfo/releases/download/v1.0.2/cnnfo-1.0.2.zip",
         "checksum": "1f81579fb1f93ab5df3349c37a1374cc",
@@ -50,7 +42,7 @@
       },
       {
         "version": "1.0.1.0",
-        "changelog": "release 1.0.1",
+        "changelog": "release 1.0.1 - 给 IExternalId.UrlFormatString 加实现 (仅对官方 10.11.0 有效，不能修自编译版)",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/BryanXBY/Jellyfin.Plugin.CnNfo/releases/download/v1.0.1/cnnfo-1.0.1.zip",
         "checksum": "63014860b5631fcb74665d018dcfa9ae",
@@ -58,7 +50,7 @@
       },
       {
         "version": "1.0.0.0",
-        "changelog": "release 1.0.0",
+        "changelog": "release 1.0.0 - 首发版",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/BryanXBY/Jellyfin.Plugin.CnNfo/releases/download/v1.0.0/cnnfo-1.0.0.zip",
         "checksum": "01d1b850b309dfd1aad0bf649f67a475",

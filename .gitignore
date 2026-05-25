@@ -20,3 +20,8 @@ Thumbs.db
 *.zip
 *.tar.gz
 artifacts/
+
+## local screenshots / debug captures ##
+错误*.png
+debug*.png
+*.bak
