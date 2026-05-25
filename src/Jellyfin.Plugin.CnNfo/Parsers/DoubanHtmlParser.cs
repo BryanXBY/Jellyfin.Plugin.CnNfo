@@ -162,12 +162,17 @@ internal static class DoubanHtmlParser
     }
 
     /// <summary>
-    /// 豆瓣简介里常有：
-    ///   - 段落前缀的全角空格 "　　"
-    ///   - 行首大段半角空格（HTML 缩进残留）
-    ///   - 多个连续空行
-    ///   - 末尾 "(展开全部)" / "(收起)" 控制文本
-    /// 这里把这些都清掉，保留段落换行。
+    /// 豆瓣简介里常见的"脏"内容：
+    ///   - 段落前缀的全角空格 "　　"（中文排版习惯）
+    ///   - 大段连续半角空格（HTML 源码缩进残留）
+    ///   - "(展开全部)" / "(收起)" / "©豆瓣" UI 标记文本
+    ///   - 一整行很长里夹着大段空白（因为豆瓣用 &lt;br&gt; 换段，而
+    ///     AngleSharp.TextContent 不把 &lt;br&gt; 转换成 \n，导致两个段落
+    ///     被拼接成同一行，中间只剩 HTML 源码的缩进空白）
+    ///
+    /// 策略：把所有 Unicode 空白连续段（包括 \n / \t / 半角空格 / 全角空格
+    /// 等）整体压成一个半角空格，再 Trim 首尾。结果是一段流式文本，没有段落
+    /// 分隔，但格式统一、没有诡异空隙。
     /// </summary>
     private static string CleanOverview(string? raw)
     {
@@ -176,38 +181,14 @@ internal static class DoubanHtmlParser
             return string.Empty;
         }
 
-        // 去掉 "(展开全部)" / "(收起)" / "©豆瓣" 之类的 UI 标记
+        // 1. 去 UI 标记文本
         var cleaned = Regex.Replace(raw, @"\(\s*展开全部\s*\)|\(\s*收起\s*\)|©\s*豆瓣", string.Empty);
 
-        var lines = cleaned.Replace("\r\n", "\n").Replace("\r", "\n").Split('\n');
-        var paragraphs = new List<string>();
-        var cur = new StringBuilder();
+        // 2. 把所有 Unicode 空白（含全角空格 U+3000）连续段折叠成单个半角空格
+        //    \s 在 .NET 默认开启 Unicode 类，全角空格也算 white-space
+        cleaned = Regex.Replace(cleaned, @"\s+", " ");
 
-        foreach (var rawLine in lines)
-        {
-            // 去前后半角空格、全角空格、制表符
-            var line = rawLine.Trim().Trim('\t', ' ', '　');
-            if (line.Length == 0)
-            {
-                if (cur.Length > 0)
-                {
-                    paragraphs.Add(cur.ToString());
-                    cur.Clear();
-                }
-                continue;
-            }
-            if (cur.Length > 0)
-            {
-                cur.Append('\n');
-            }
-            cur.Append(line);
-        }
-        if (cur.Length > 0)
-        {
-            paragraphs.Add(cur.ToString());
-        }
-
-        return string.Join("\n\n", paragraphs);
+        return cleaned.Trim();
     }
 
     private static string NormalizeDate(string s)
