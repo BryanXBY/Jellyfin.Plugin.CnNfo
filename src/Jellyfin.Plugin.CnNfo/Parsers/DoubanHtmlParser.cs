@@ -143,22 +143,56 @@ internal static class DoubanHtmlParser
     ///   - .short        -> 截断版 + "(展开全部)" 链接
     /// 两个都可能带 property="v:summary"，所以单纯 QuerySelector 容易取到 .short。
     /// 这里显式优先取 .all，再回退到 [property=v:summary]，最后挑最长那段。
+    /// 注意：用 GetElementText 而非 TextContent，以便把 &lt;br&gt; 显式转成 \n，
+    /// 避免豆瓣用 &lt;br&gt; 分段时两段直接拼合（无任何空白分隔符）。
     /// </summary>
     private static string? ExtractOverview(AngleSharp.Dom.IDocument doc)
     {
-        var candidates = new List<string?>
+        var selectors = new[]
         {
-            doc.QuerySelector("#link-report-intra span.all")?.TextContent,
-            doc.QuerySelector("#link-report span.all")?.TextContent,
-            doc.QuerySelector("span.all[property='v:summary']")?.TextContent,
-            doc.QuerySelector("span[property='v:summary']:not(.short)")?.TextContent,
-            doc.QuerySelector("span[property='v:summary']")?.TextContent,
-            doc.QuerySelector("#link-report .short")?.TextContent
+            "#link-report-intra span.all",
+            "#link-report span.all",
+            "span.all[property='v:summary']",
+            "span[property='v:summary']:not(.short)",
+            "span[property='v:summary']",
+            "#link-report .short",
         };
-        return candidates
+        return selectors
+            .Select(sel => doc.QuerySelector(sel))
+            .OfType<IElement>()
+            .Select(GetElementText)
             .Where(s => !string.IsNullOrWhiteSpace(s))
             .OrderByDescending(s => s!.Length)
             .FirstOrDefault();
+    }
+
+    /// <summary>
+    /// 遍历 DOM 子节点提取纯文本，将 &lt;br&gt; 显式转为 \n。
+    /// AngleSharp 的 TextContent 属性完全忽略 &lt;br&gt; 标签，
+    /// 若 &lt;br&gt; 两侧无空白符则相邻段落会被直接拼接，无任何分隔。
+    /// </summary>
+    private static string GetElementText(IElement el)
+    {
+        var sb = new StringBuilder();
+        foreach (var node in el.ChildNodes)
+        {
+            if (node is IText text)
+            {
+                sb.Append(text.Data);
+            }
+            else if (node is IElement child)
+            {
+                if (child.TagName.Equals("BR", StringComparison.OrdinalIgnoreCase))
+                {
+                    sb.Append('\n');
+                }
+                else
+                {
+                    sb.Append(GetElementText(child));
+                }
+            }
+        }
+        return sb.ToString();
     }
 
     /// <summary>
